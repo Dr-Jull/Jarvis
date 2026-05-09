@@ -1,6 +1,10 @@
 import sys
 import os
+from dotenv import load_dotenv
 from src.jarvis import JARVIS
+
+# Load environment variables from .env file
+load_dotenv()
 from src.memory import MemoryManager
 from src.security import SecurityManager
 from src.llm import MockLLM, OllamaProvider

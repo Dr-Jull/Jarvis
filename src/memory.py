@@ -53,3 +53,6 @@ class MemoryManager:
             })
         session.close()
         return results
+
+    def dispose(self):
+        self.engine.dispose()

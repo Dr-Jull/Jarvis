@@ -15,6 +15,7 @@ class TestJARVIS(unittest.TestCase):
         self.jarvis = JARVIS(memory_manager=self.memory, llm_provider=MockLLM())
 
     def tearDown(self):
+        self.memory.dispose()
         if os.path.exists(self.key_path):
             os.remove(self.key_path)
         if os.path.exists("test_memory.db"):
