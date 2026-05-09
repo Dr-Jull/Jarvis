@@ -56,5 +56,15 @@ class TestJARVIS(unittest.TestCase):
         self.assertTrue(any("What is your name?" in m['content'] for m in memories))
         self.assertTrue(any(response in m['content'] for m in memories))
 
+    def test_tool_triggering(self):
+        # Trigger time tool
+        response = self.jarvis.ask("What time is it?")
+        # MockLLM should reflect the tool output if it was triggered
+        self.assertIn("The current time is", response)
+
+        # Trigger weather tool
+        response = self.jarvis.ask("How is the weather?")
+        self.assertIn("[Weather]", response)
+
 if __name__ == "__main__":
     unittest.main()
