@@ -101,5 +101,36 @@ class WeatherTool(BaseTool):
         except Exception as e:
             return f"Weather check failed: {e}"
 
-def get_default_tools():
-    return [TimeCheckTool(), WebSearchTool(), WeatherTool()]
+class TaskTool(BaseTool):
+    def __init__(self, memory_manager):
+        self.memory_manager = memory_manager
+
+    @property
+    def name(self):
+        return "TaskTool"
+
+    @property
+    def description(self):
+        return "Manages tasks and reminders."
+
+    @property
+    def keywords(self):
+        return ["task", "todo", "remind me", "list my tasks"]
+
+    def execute(self, query: str):
+        if "list" in query.lower() or "show" in query.lower():
+            tasks = self.memory_manager.get_memories(category="task")
+            if not tasks:
+                return "You have no tasks."
+            return "Your tasks:\n" + "\n".join([f"- {t['content']}" for t in tasks])
+
+        # Simple extraction for adding tasks
+        task_content = query.replace("remind me to", "").replace("add task", "").strip()
+        self.memory_manager.add_memory("task", task_content)
+        return f"Task added: {task_content}"
+
+def get_default_tools(memory_manager=None):
+    tools = [TimeCheckTool(), WebSearchTool(), WeatherTool()]
+    if memory_manager:
+        tools.append(TaskTool(memory_manager))
+    return tools

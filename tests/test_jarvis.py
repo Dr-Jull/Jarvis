@@ -72,5 +72,10 @@ class TestJARVIS(unittest.TestCase):
         facts = self.jarvis.get_facts()
         self.assertTrue(any("pepperoni pizza" in f['content'] for f in facts))
 
+    def test_task_management(self):
+        self.jarvis.ask("remind me to buy milk")
+        response = self.jarvis.ask("list my tasks")
+        self.assertIn("buy milk", response)
+
 if __name__ == "__main__":
     unittest.main()

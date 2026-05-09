@@ -9,7 +9,7 @@ Base = declarative_base()
 class EncryptedMemory(Base):
     __tablename__ = 'memory'
     id = Column(Integer, primary_key=True)
-    category = Column(String)  # e.g., 'conversation', 'fact'
+    category = Column(String)  # e.g., 'conversation', 'fact', 'task', 'summary'
     content = Column(LargeBinary)  # Encrypted content
     timestamp = Column(DateTime, default=lambda: datetime.now(UTC))
 

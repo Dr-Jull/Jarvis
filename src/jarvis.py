@@ -6,7 +6,7 @@ class JARVIS:
     def __init__(self, memory_manager: MemoryManager = None, llm_provider: LLMProvider = None, tools: list = None):
         self.memory_manager = memory_manager or MemoryManager()
         self.llm_provider = llm_provider or MockLLM()
-        self.tools = tools if tools is not None else get_default_tools()
+        self.tools = tools if tools is not None else get_default_tools(self.memory_manager)
 
     def _extract_facts(self, query: str):
         # In a real scenario, we would ask the LLM: "Does this sentence contain a personal fact about the user? If so, extract it."
@@ -16,15 +16,36 @@ class JARVIS:
             self.remember_fact(f"User fact: {fact}")
 
     def _select_tool(self, query: str):
-        # Determine which tool to use.
-        # If using a real LLM, we should ask it: "Given these tools: [names], which one is needed for: [query]?"
-        # Falling back to keyword matching if LLM is mock or fails.
+        # LLM-based intent classification
+        if not isinstance(self.llm_provider, MockLLM):
+            tool_names = [t.name for t in self.tools]
+            prompt = (
+                f"Identify the best tool for this user query: '{query}'.\n"
+                f"Available tools: {', '.join(tool_names)}.\n"
+                "Reply ONLY with the tool name or 'None'."
+            )
+            llm_choice = self.llm_provider.generate_response(prompt).strip()
+            for tool in self.tools:
+                if tool.name.lower() in llm_choice.lower():
+                    return tool
+
+        # Fallback to keyword matching
         for tool in self.tools:
             if any(kw in query.lower() for kw in tool.keywords):
                 return tool
         return None
 
+    def _manage_context_memory(self):
+        # Check if conversation history is too long and summarize if needed
+        # This is a stub for the summarization logic.
+        # In a real scenario, we would take the oldest 10 messages,
+        # ask the LLM to summarize them, and save to 'summary' category.
+        pass
+
     def ask(self, query: str) -> str:
+        # Context management
+        self._manage_context_memory()
+
         # Automatic Fact Extraction
         self._extract_facts(query)
 
