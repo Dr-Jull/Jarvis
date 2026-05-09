@@ -2,3 +2,4 @@ sqlalchemy
 cryptography
 requests
 python-dotenv
+duckduckgo-search

@@ -34,7 +34,14 @@ class JARVIS:
 
         # Retrieve context from memory
         past_memories = self.memory_manager.get_memories(category="conversation", limit=5)
-        context = [m['content'] for m in past_memories]  # Last 5 messages for context
+        personal_facts = self.memory_manager.get_memories(category="fact", limit=10)
+
+        context = []
+        if personal_facts:
+            context.append("Personal facts about the user:")
+            context.extend([f"- {f['content']}" for f in personal_facts])
+
+        context.extend([m['content'] for m in past_memories])  # Last 5 messages for context
 
         if tool_output:
             context.append(f"Tool Output ({triggered_tool.name}): {tool_output}")

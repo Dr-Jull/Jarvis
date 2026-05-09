@@ -38,6 +38,8 @@ class TimeCheckTool(BaseTool):
         now = datetime.datetime.now()
         return f"The current time is {now.strftime('%H:%M:%S')}."
 
+from duckduckgo_search import DDGS
+
 class WebSearchTool(BaseTool):
     @property
     def name(self):
@@ -49,11 +51,21 @@ class WebSearchTool(BaseTool):
 
     @property
     def keywords(self):
-        return ["search", "google", "find out", "who is", "what is"]
+        return ["search", "google", "find out", "who is", "what is", "current"]
 
     def execute(self, query: str):
-        # Simulated search result
-        return f"[WebSearch] I found some information about '{query}'. (Simulated search results)"
+        try:
+            with DDGS() as ddgs:
+                results = list(ddgs.text(query, max_results=3))
+                if not results:
+                    return "No results found."
+
+                formatted_results = "\n".join([f"- {r['title']}: {r['body']}" for r in results])
+                return f"[WebSearch] Results for '{query}':\n{formatted_results}"
+        except Exception as e:
+            return f"WebSearch failed: {e}"
+
+import requests
 
 class WeatherTool(BaseTool):
     @property
@@ -69,8 +81,25 @@ class WeatherTool(BaseTool):
         return ["weather", "temperature", "rain", "sunny"]
 
     def execute(self, query: str):
-        # Simulated weather result
-        return f"[Weather] The weather is currently clear and 22°C. (Simulated data)"
+        try:
+            # First, get approximate location via IP
+            loc_res = requests.get("https://ipapi.co/json/", timeout=5)
+            loc_data = loc_res.json()
+            lat = loc_data.get("latitude", 51.5074)  # Default to London
+            lon = loc_data.get("longitude", -0.1278)
+            city = loc_data.get("city", "London")
+
+            # Then, get weather via Open-Meteo
+            weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
+            weather_res = requests.get(weather_url, timeout=5)
+            weather_data = weather_res.json()
+            current = weather_data.get("current_weather", {})
+            temp = current.get("temperature", "N/A")
+            wind = current.get("windspeed", "N/A")
+
+            return f"[Weather] In {city}, it's currently {temp}°C with a wind speed of {wind} km/h."
+        except Exception as e:
+            return f"Weather check failed: {e}"
 
 def get_default_tools():
     return [TimeCheckTool(), WebSearchTool(), WeatherTool()]
