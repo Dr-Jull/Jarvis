@@ -46,7 +46,9 @@ def main():
             if not user_input:
                 continue
 
+            print("JARVIS is thinking...", end="\r")
             response = jarvis.ask(user_input)
+            print(" " * 25, end="\r")  # Clear "thinking" line
             print(f"JARVIS: {response}")
 
             if voice_enabled:

@@ -8,16 +8,29 @@ class JARVIS:
         self.llm_provider = llm_provider or MockLLM()
         self.tools = tools if tools is not None else get_default_tools()
 
-    def ask(self, query: str) -> str:
-        # Check for tool triggering
-        tool_output = None
-        triggered_tool = None
+    def _extract_facts(self, query: str):
+        # In a real scenario, we would ask the LLM: "Does this sentence contain a personal fact about the user? If so, extract it."
+        # For now, we'll use a simple heuristic or a secondary LLM call if using a real provider.
+        if "i love" in query.lower() or "my favorite" in query.lower() or "i live in" in query.lower():
+            fact = query.strip()
+            self.remember_fact(f"User fact: {fact}")
 
+    def _select_tool(self, query: str):
+        # Determine which tool to use.
+        # If using a real LLM, we should ask it: "Given these tools: [names], which one is needed for: [query]?"
+        # Falling back to keyword matching if LLM is mock or fails.
         for tool in self.tools:
             if any(kw in query.lower() for kw in tool.keywords):
-                triggered_tool = tool
-                tool_output = tool.execute(query)
-                break
+                return tool
+        return None
+
+    def ask(self, query: str) -> str:
+        # Automatic Fact Extraction
+        self._extract_facts(query)
+
+        # Check for tool triggering
+        triggered_tool = self._select_tool(query)
+        tool_output = triggered_tool.execute(query) if triggered_tool else None
 
         # Retrieve context from memory
         past_memories = self.memory_manager.get_memories(category="conversation", limit=5)

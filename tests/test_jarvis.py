@@ -67,5 +67,10 @@ class TestJARVIS(unittest.TestCase):
         response = self.jarvis.ask("How is the weather?")
         self.assertIn("[Weather]", response)
 
+    def test_fact_extraction(self):
+        self.jarvis.ask("I love pepperoni pizza")
+        facts = self.jarvis.get_facts()
+        self.assertTrue(any("pepperoni pizza" in f['content'] for f in facts))
+
 if __name__ == "__main__":
     unittest.main()
