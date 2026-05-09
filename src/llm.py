@@ -39,6 +39,10 @@ class OllamaProvider(LLMProvider):
             response = requests.post(url, json=payload, timeout=30)
             response.raise_for_status()
             return response.json().get("response", "No response from Ollama.")
+        except requests.exceptions.ConnectionError:
+            return "Connection Error: Could not reach Ollama. Please ensure Ollama is running (e.g., 'ollama serve')."
+        except requests.exceptions.Timeout:
+            return "Timeout Error: Ollama is taking too long to respond."
         except Exception as e:
             return f"Error communicating with Ollama: {e}"
 
